@@ -1,0 +1,13 @@
+
+
+struct aircraft;
+
+
+int addition(void) {
+    return b + b;
+}
+
+int main(void) {
+    return 0;
+   
+}

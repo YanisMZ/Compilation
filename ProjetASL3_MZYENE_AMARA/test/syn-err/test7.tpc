@@ -1,0 +1,6 @@
+static a = 0;
+
+int main(void) {
+    // Example
+    return 0;
+}

@@ -1,0 +1,18 @@
+// Test de base : déclaration de variables et fonctions
+
+
+
+struct aircraft {
+int height, width;
+struct engine motor;
+};
+
+struct aircraft a1,a2;
+
+
+int main(void) {
+    int a;
+    int b;
+    a = 10;
+    return 0;
+}

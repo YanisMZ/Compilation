@@ -1,0 +1,6 @@
+void maFonction() {
+}
+int main(void) {
+    maFonction();
+    return 0;
+}

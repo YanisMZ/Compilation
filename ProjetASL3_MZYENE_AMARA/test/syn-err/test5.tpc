@@ -1,0 +1,6 @@
+int func(10);
+
+int main(void) {
+    // Example
+    return 0;
+}

@@ -1,0 +1,13 @@
+// Test des instructions conditionnelles (if-else) dans une fonction
+int test_if_else(void) {
+    int x ;
+    if (x > 3) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+int main(void) {
+    return test_if_else();
+}

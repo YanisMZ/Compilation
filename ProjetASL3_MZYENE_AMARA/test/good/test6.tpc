@@ -1,0 +1,13 @@
+// Test des boucles (while) dans une fonction
+int test_while(void) {
+    int x;
+    x =0;
+    while (x < 5) {
+        x = x + 1;
+    }
+    return x;
+}
+
+int main(void) {
+    return test_while();
+}

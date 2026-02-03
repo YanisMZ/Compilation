@@ -1,0 +1,10 @@
+// Test d'une fonction void sans retour
+void print_hello(void) {
+    // Affiche simplement un message sans retour
+    return;
+}
+
+int main(void) {
+    print_hello();
+    return 0;
+}
