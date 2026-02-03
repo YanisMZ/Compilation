@@ -564,10 +564,10 @@ static const yytype_int16 yyrline[] =
        0,    53,    53,    67,    72,    77,    81,    90,    95,   103,
      109,   121,   129,   139,   149,   155,   160,   170,   175,   183,
      192,   199,   209,   214,   222,   230,   243,   255,   260,   264,
-     271,   278,   286,   293,   301,   307,   312,   321,   329,   336,
-     340,   347,   351,   358,   362,   369,   373,   380,   384,   391,
-     395,   401,   407,   408,   412,   416,   417,   430,   431,   435,
-     440
+     273,   282,   292,   301,   310,   318,   325,   337,   344,   353,
+     358,   367,   372,   381,   386,   395,   400,   409,   414,   423,
+     428,   436,   444,   448,   454,   461,   465,   477,   480,   484,
+     490
 };
 #endif
 
@@ -1499,317 +1499,340 @@ yyreduce:
     break;
 
   case 29: /* Instr: IDENT '=' Exp ';'  */
-#line 264 "src/le_parser.y"
-                      {
-        Node *tmp = makeNode(Instr, NULL);
-        addChild(tmp, makeNode(id, (yyvsp[-3].id)));
-        addChild(tmp, makeNode(id, "="));
-        addChild(tmp, (yyvsp[-1].node));
-        (yyval.node) = tmp;
+#line 265 "src/le_parser.y"
+    {
+      Node *tmp = makeNode(Instr, NULL);
+      Node *opNode = makeNode(id, "=");
+      addChild(opNode, makeNode(id, (yyvsp[-3].id)));
+      addChild(opNode, (yyvsp[-1].node));
+      addChild(tmp, opNode);
+      (yyval.node) = tmp;
     }
-#line 1511 "obj/le_parser.c"
+#line 1512 "obj/le_parser.c"
     break;
 
   case 30: /* Instr: IF '(' Exp ')' Instr  */
-#line 271 "src/le_parser.y"
-                         {
-        Node *tmp = makeNode(Instr, NULL);
-        addChild(tmp, makeNode(id, "if"));
-        addChild(tmp, (yyvsp[-2].node));
-        addChild(tmp, (yyvsp[0].node));
-        (yyval.node) = tmp;
+#line 274 "src/le_parser.y"
+    {
+      Node *tmp = makeNode(Instr, NULL);
+      Node *ifNode = makeNode(id, "if");
+      addChild(ifNode, (yyvsp[-2].node));
+      addChild(ifNode, (yyvsp[0].node));
+      addChild(tmp, ifNode);
+      (yyval.node) = tmp;
     }
-#line 1523 "obj/le_parser.c"
+#line 1525 "obj/le_parser.c"
     break;
 
   case 31: /* Instr: IF '(' Exp ')' Instr ELSE Instr  */
-#line 278 "src/le_parser.y"
-                                    {
-        Node *tmp = makeNode(Instr, NULL);
-        addChild(tmp, makeNode(id, "ifelse"));
-        addChild(tmp, (yyvsp[-4].node));
-        addChild(tmp, (yyvsp[-2].node));
-        addChild(tmp, (yyvsp[0].node));
-        (yyval.node) = tmp;
+#line 283 "src/le_parser.y"
+    {
+      Node *tmp = makeNode(Instr, NULL);
+      Node *ifNode = makeNode(id, "ifelse");
+      addChild(ifNode, (yyvsp[-4].node));
+      addChild(ifNode, (yyvsp[-2].node));
+      addChild(ifNode, (yyvsp[0].node));
+      addChild(tmp, ifNode);
+      (yyval.node) = tmp;
     }
-#line 1536 "obj/le_parser.c"
+#line 1539 "obj/le_parser.c"
     break;
 
   case 32: /* Instr: WHILE '(' Exp ')' Instr  */
-#line 286 "src/le_parser.y"
-                            {
-        Node *tmp = makeNode(Instr, NULL);
-        addChild(tmp, makeNode(id, "while"));
-        addChild(tmp, (yyvsp[-2].node));
-        addChild(tmp, (yyvsp[0].node));
-        (yyval.node) = tmp;
+#line 293 "src/le_parser.y"
+    {
+      Node *tmp = makeNode(Instr, NULL);
+      Node *whileNode = makeNode(id, "while");
+      addChild(whileNode, (yyvsp[-2].node));
+      addChild(whileNode, (yyvsp[0].node));
+      addChild(tmp, whileNode);
+      (yyval.node) = tmp;
     }
-#line 1548 "obj/le_parser.c"
+#line 1552 "obj/le_parser.c"
     break;
 
   case 33: /* Instr: IDENT '(' Arguments ')' ';'  */
-#line 293 "src/le_parser.y"
-                                {
-        Node *tmp = makeNode(Instr, NULL);
-        Node *callNode = makeNode(id, "call");
-        addChild(callNode, makeNode(id, (yyvsp[-4].id)));
-        if ((yyvsp[-2].node)) addChild(callNode, (yyvsp[-2].node));
-        addChild(tmp, callNode);
-        (yyval.node) = tmp;
+#line 302 "src/le_parser.y"
+    {
+      Node *tmp = makeNode(Instr, NULL);
+      Node *callNode = makeNode(id, "call");
+      addChild(callNode, makeNode(id, (yyvsp[-4].id)));
+      if ((yyvsp[-2].node)) addChild(callNode, (yyvsp[-2].node));
+      addChild(tmp, callNode);
+      (yyval.node) = tmp;
     }
-#line 1561 "obj/le_parser.c"
+#line 1565 "obj/le_parser.c"
     break;
 
   case 34: /* Instr: RETURN Exp ';'  */
-#line 301 "src/le_parser.y"
-                   {
-        Node *tmp = makeNode(Instr, NULL);
-        addChild(tmp, makeNode(id, "return"));
-        addChild(tmp, (yyvsp[-1].node));
-        (yyval.node) = tmp;
+#line 311 "src/le_parser.y"
+    {
+      Node *tmp = makeNode(Instr, NULL);
+      Node *retNode = makeNode(id, "return");
+      addChild(retNode, (yyvsp[-1].node));
+      addChild(tmp, retNode);
+      (yyval.node) = tmp;
     }
-#line 1572 "obj/le_parser.c"
+#line 1577 "obj/le_parser.c"
     break;
 
   case 35: /* Instr: RETURN ';'  */
-#line 307 "src/le_parser.y"
-               {
-        Node *tmp = makeNode(Instr, NULL);
-        addChild(tmp, makeNode(id, "return"));
-        (yyval.node) = tmp;
+#line 319 "src/le_parser.y"
+    {
+      Node *tmp = makeNode(Instr, NULL);
+      Node *retNode = makeNode(id, "return");
+      addChild(tmp, retNode);
+      (yyval.node) = tmp;
     }
-#line 1582 "obj/le_parser.c"
+#line 1588 "obj/le_parser.c"
     break;
 
   case 36: /* Instr: '{' SuiteInstr '}'  */
-#line 312 "src/le_parser.y"
-                       {
-        if ((yyvsp[-1].node)) {
-            Node *tmp = makeNode(Instr, NULL);
-            addChild(tmp, (yyvsp[-1].node));
-            (yyval.node) = tmp;
-        } else {
-            (yyval.node) = makeNode(Instr, "empty_block");
-        }
-    }
-#line 1596 "obj/le_parser.c"
-    break;
-
-  case 37: /* Instr: ';'  */
-#line 321 "src/le_parser.y"
-        {
-        (yyval.node) = makeNode(Instr, "empty_instr");
+#line 326 "src/le_parser.y"
+    {
+      if ((yyvsp[-1].node)) {
+        Node *tmp = makeNode(Instr, NULL);
+        Node *blockNode = makeNode(id, "block");
+        addChild(blockNode, (yyvsp[-1].node));
+        addChild(tmp, blockNode);
+        (yyval.node) = tmp;
+      } else {
+        (yyval.node) = makeNode(Instr, "empty_block");
+      }
     }
 #line 1604 "obj/le_parser.c"
     break;
 
-  case 38: /* Exp: Exp OR TB  */
-#line 329 "src/le_parser.y"
-              {
-        Node *tmp = makeNode(Exp, NULL);
-        addChild(tmp, (yyvsp[-2].node));
-        addChild(tmp, makeNode(id, "||"));
-        addChild(tmp, (yyvsp[0].node));
-        (yyval.node) = tmp;
+  case 37: /* Instr: ';'  */
+#line 338 "src/le_parser.y"
+    {
+      (yyval.node) = makeNode(Instr, "empty_instr");
     }
-#line 1616 "obj/le_parser.c"
+#line 1612 "obj/le_parser.c"
+    break;
+
+  case 38: /* Exp: Exp OR TB  */
+#line 345 "src/le_parser.y"
+    {
+      Node *tmp = makeNode(Exp, NULL);
+      Node *opNode = makeNode(id, "||");
+      addChild(opNode, (yyvsp[-2].node));
+      addChild(opNode, (yyvsp[0].node));
+      addChild(tmp, opNode);
+      (yyval.node) = tmp;
+    }
+#line 1625 "obj/le_parser.c"
     break;
 
   case 39: /* Exp: TB  */
-#line 336 "src/le_parser.y"
-       { (yyval.node) = (yyvsp[0].node); }
-#line 1622 "obj/le_parser.c"
+#line 354 "src/le_parser.y"
+    { (yyval.node) = (yyvsp[0].node); }
+#line 1631 "obj/le_parser.c"
     break;
 
   case 40: /* TB: TB AND FB  */
-#line 340 "src/le_parser.y"
-              {
-        Node *tmp = makeNode(TB, NULL);
-        addChild(tmp, (yyvsp[-2].node));
-        addChild(tmp, makeNode(id, "&&"));
-        addChild(tmp, (yyvsp[0].node));
-        (yyval.node) = tmp;
+#line 359 "src/le_parser.y"
+    {
+      Node *tmp = makeNode(TB, NULL);
+      Node *opNode = makeNode(id, "&&");
+      addChild(opNode, (yyvsp[-2].node));
+      addChild(opNode, (yyvsp[0].node));
+      addChild(tmp, opNode);
+      (yyval.node) = tmp;
     }
-#line 1634 "obj/le_parser.c"
+#line 1644 "obj/le_parser.c"
     break;
 
   case 41: /* TB: FB  */
-#line 347 "src/le_parser.y"
-       { (yyval.node) = (yyvsp[0].node); }
-#line 1640 "obj/le_parser.c"
+#line 368 "src/le_parser.y"
+    { (yyval.node) = (yyvsp[0].node); }
+#line 1650 "obj/le_parser.c"
     break;
 
   case 42: /* FB: FB EQ M  */
-#line 351 "src/le_parser.y"
-            {
-        Node *tmp = makeNode(FB, NULL);
-        addChild(tmp, (yyvsp[-2].node));
-        addChild(tmp, makeNode(id, (yyvsp[-1].id)));
-        addChild(tmp, (yyvsp[0].node));
-        (yyval.node) = tmp;
+#line 373 "src/le_parser.y"
+    {
+      Node *tmp = makeNode(FB, NULL);
+      Node *opNode = makeNode(id, (yyvsp[-1].id));
+      addChild(opNode, (yyvsp[-2].node));
+      addChild(opNode, (yyvsp[0].node));
+      addChild(tmp, opNode);
+      (yyval.node) = tmp;
     }
-#line 1652 "obj/le_parser.c"
+#line 1663 "obj/le_parser.c"
     break;
 
   case 43: /* FB: M  */
-#line 358 "src/le_parser.y"
-      { (yyval.node) = (yyvsp[0].node); }
-#line 1658 "obj/le_parser.c"
+#line 382 "src/le_parser.y"
+    { (yyval.node) = (yyvsp[0].node); }
+#line 1669 "obj/le_parser.c"
     break;
 
   case 44: /* M: M ORDER E  */
-#line 362 "src/le_parser.y"
-              {
-        Node *tmp = makeNode(M, NULL);
-        addChild(tmp, (yyvsp[-2].node));
-        addChild(tmp, makeNode(id, (yyvsp[-1].id)));
-        addChild(tmp, (yyvsp[0].node));
-        (yyval.node) = tmp;
+#line 387 "src/le_parser.y"
+    {
+      Node *tmp = makeNode(M, NULL);
+      Node *opNode = makeNode(id, (yyvsp[-1].id));
+      addChild(opNode, (yyvsp[-2].node));
+      addChild(opNode, (yyvsp[0].node));
+      addChild(tmp, opNode);
+      (yyval.node) = tmp;
     }
-#line 1670 "obj/le_parser.c"
+#line 1682 "obj/le_parser.c"
     break;
 
   case 45: /* M: E  */
-#line 369 "src/le_parser.y"
-      { (yyval.node) = (yyvsp[0].node); }
-#line 1676 "obj/le_parser.c"
-    break;
-
-  case 46: /* E: E ADDSUB T  */
-#line 373 "src/le_parser.y"
-               {
-        Node *tmp = makeNode(E, NULL);
-        addChild(tmp, (yyvsp[-2].node));
-        addChild(tmp, makeNode(id, (yyvsp[-1].id)));
-        addChild(tmp, (yyvsp[0].node));
-        (yyval.node) = tmp;
-    }
+#line 396 "src/le_parser.y"
+    { (yyval.node) = (yyvsp[0].node); }
 #line 1688 "obj/le_parser.c"
     break;
 
+  case 46: /* E: E ADDSUB T  */
+#line 401 "src/le_parser.y"
+    {
+      Node *tmp = makeNode(E, NULL);
+      Node *opNode = makeNode(id, (yyvsp[-1].id));
+      addChild(opNode, (yyvsp[-2].node));
+      addChild(opNode, (yyvsp[0].node));
+      addChild(tmp, opNode);
+      (yyval.node) = tmp;
+    }
+#line 1701 "obj/le_parser.c"
+    break;
+
   case 47: /* E: T  */
-#line 380 "src/le_parser.y"
-      { (yyval.node) = (yyvsp[0].node); }
-#line 1694 "obj/le_parser.c"
+#line 410 "src/le_parser.y"
+    { (yyval.node) = (yyvsp[0].node); }
+#line 1707 "obj/le_parser.c"
     break;
 
   case 48: /* T: T DIVSTAR F  */
-#line 384 "src/le_parser.y"
-                {
-        Node *tmp = makeNode(T, NULL);
-        addChild(tmp, (yyvsp[-2].node));
-        addChild(tmp, makeNode(id, (yyvsp[-1].id)));
-        addChild(tmp, (yyvsp[0].node));
-        (yyval.node) = tmp;
+#line 415 "src/le_parser.y"
+    {
+      Node *tmp = makeNode(T, NULL);
+      Node *opNode = makeNode(id, (yyvsp[-1].id));
+      addChild(opNode, (yyvsp[-2].node));
+      addChild(opNode, (yyvsp[0].node));
+      addChild(tmp, opNode);
+      (yyval.node) = tmp;
     }
-#line 1706 "obj/le_parser.c"
+#line 1720 "obj/le_parser.c"
     break;
 
   case 49: /* T: F  */
-#line 391 "src/le_parser.y"
-      { (yyval.node) = (yyvsp[0].node); }
-#line 1712 "obj/le_parser.c"
+#line 424 "src/le_parser.y"
+    { (yyval.node) = (yyvsp[0].node); }
+#line 1726 "obj/le_parser.c"
     break;
 
   case 50: /* F: ADDSUB F  */
-#line 395 "src/le_parser.y"
-             {
-        Node *tmp = makeNode(F, NULL);
-        addChild(tmp, makeNode(id, (yyvsp[-1].id)));
-        addChild(tmp, (yyvsp[0].node));
-        (yyval.node) = tmp;
+#line 429 "src/le_parser.y"
+    {
+      Node *tmp = makeNode(F, NULL);
+      Node *opNode = makeNode(id, (yyvsp[-1].id));
+      addChild(opNode, (yyvsp[0].node));
+      addChild(tmp, opNode);
+      (yyval.node) = tmp;
     }
-#line 1723 "obj/le_parser.c"
+#line 1738 "obj/le_parser.c"
     break;
 
   case 51: /* F: '!' F  */
-#line 401 "src/le_parser.y"
-          {
-        Node *tmp = makeNode(F, NULL);
-        addChild(tmp, makeNode(id, "!"));
-        addChild(tmp, (yyvsp[0].node));
-        (yyval.node) = tmp;
+#line 437 "src/le_parser.y"
+    {
+      Node *tmp = makeNode(F, NULL);
+      Node *opNode = makeNode(id, "!");
+      addChild(opNode, (yyvsp[0].node));
+      addChild(tmp, opNode);
+      (yyval.node) = tmp;
     }
-#line 1734 "obj/le_parser.c"
+#line 1750 "obj/le_parser.c"
     break;
 
   case 52: /* F: '(' Exp ')'  */
-#line 407 "src/le_parser.y"
-                { (yyval.node) = (yyvsp[-1].node); }
-#line 1740 "obj/le_parser.c"
-    break;
-
-  case 53: /* F: NUM  */
-#line 408 "src/le_parser.y"
-        {
-        char buf[32]; snprintf(buf, sizeof(buf), "%d", (yyvsp[0].num));
-        (yyval.node) = makeNode(num, buf);
-    }
-#line 1749 "obj/le_parser.c"
-    break;
-
-  case 54: /* F: CHARACTER  */
-#line 412 "src/le_parser.y"
-              {
-        char buf[2]; buf[0] = (yyvsp[0].character); buf[1] = '\0';
-        (yyval.node) = makeNode(id, buf);
+#line 445 "src/le_parser.y"
+    {
+      (yyval.node) = (yyvsp[-1].node);
     }
 #line 1758 "obj/le_parser.c"
     break;
 
+  case 53: /* F: NUM  */
+#line 449 "src/le_parser.y"
+    {
+      char buf[32];
+      snprintf(buf, sizeof(buf), "%d", (yyvsp[0].num));
+      (yyval.node) = makeNode(num, buf);
+    }
+#line 1768 "obj/le_parser.c"
+    break;
+
+  case 54: /* F: CHARACTER  */
+#line 455 "src/le_parser.y"
+    {
+      char buf[2];
+      buf[0] = (yyvsp[0].character);
+      buf[1] = '\0';
+      (yyval.node) = makeNode(id, buf);
+    }
+#line 1779 "obj/le_parser.c"
+    break;
+
   case 55: /* F: IDENT  */
-#line 416 "src/le_parser.y"
-          { (yyval.node) = makeNode(id, (yyvsp[0].id)); }
-#line 1764 "obj/le_parser.c"
+#line 462 "src/le_parser.y"
+    {
+      (yyval.node) = makeNode(id, (yyvsp[0].id));
+    }
+#line 1787 "obj/le_parser.c"
     break;
 
   case 56: /* F: IDENT '(' Arguments ')'  */
-#line 417 "src/le_parser.y"
-                            {
-        Node *tmp = makeNode(F, NULL);
-        Node *callNode = makeNode(id, "call");
-        addChild(callNode, makeNode(id, (yyvsp[-3].id)));
-        if ((yyvsp[-1].node)) addChild(callNode, (yyvsp[-1].node));
-        addChild(tmp, callNode);
-        (yyval.node) = tmp;
+#line 466 "src/le_parser.y"
+    {
+      Node *tmp = makeNode(F, NULL);
+      Node *callNode = makeNode(id, "call");
+      addChild(callNode, makeNode(id, (yyvsp[-3].id)));
+      if ((yyvsp[-1].node)) addChild(callNode, (yyvsp[-1].node));
+      addChild(tmp, callNode);
+      (yyval.node) = tmp;
     }
-#line 1777 "obj/le_parser.c"
+#line 1800 "obj/le_parser.c"
     break;
 
   case 57: /* Arguments: ListExp  */
-#line 430 "src/le_parser.y"
-            { (yyval.node) = (yyvsp[0].node); }
-#line 1783 "obj/le_parser.c"
+#line 478 "src/le_parser.y"
+    { (yyval.node) = (yyvsp[0].node); }
+#line 1806 "obj/le_parser.c"
     break;
 
   case 58: /* Arguments: %empty  */
-#line 431 "src/le_parser.y"
+#line 480 "src/le_parser.y"
     { (yyval.node) = NULL; }
-#line 1789 "obj/le_parser.c"
+#line 1812 "obj/le_parser.c"
     break;
 
   case 59: /* ListExp: ListExp ',' Exp  */
-#line 435 "src/le_parser.y"
-                    {
-        Node *tmp = (yyvsp[-2].node) ? (yyvsp[-2].node) : makeNode(ListExp, NULL);
-        addChild(tmp, (yyvsp[0].node));
-        (yyval.node) = tmp;
+#line 485 "src/le_parser.y"
+    {
+      Node *tmp = (yyvsp[-2].node) ? (yyvsp[-2].node) : makeNode(ListExp, NULL);
+      addChild(tmp, (yyvsp[0].node));
+      (yyval.node) = tmp;
     }
-#line 1799 "obj/le_parser.c"
+#line 1822 "obj/le_parser.c"
     break;
 
   case 60: /* ListExp: Exp  */
-#line 440 "src/le_parser.y"
-        {
-        Node *tmp = makeNode(ListExp, NULL);
-        addChild(tmp, (yyvsp[0].node));
-        (yyval.node) = tmp;
+#line 491 "src/le_parser.y"
+    {
+      Node *tmp = makeNode(ListExp, NULL);
+      addChild(tmp, (yyvsp[0].node));
+      (yyval.node) = tmp;
     }
-#line 1809 "obj/le_parser.c"
+#line 1832 "obj/le_parser.c"
     break;
 
 
-#line 1813 "obj/le_parser.c"
+#line 1836 "obj/le_parser.c"
 
       default: break;
     }
@@ -2002,7 +2025,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 447 "src/le_parser.y"
+#line 499 "src/le_parser.y"
 
 
 int yyparse();

@@ -261,188 +261,240 @@ SuiteInstr:
 ;
 
 Instr:
-    IDENT '=' Exp ';' {
+    IDENT '=' Exp ';'
+    {
+      Node *tmp = makeNode(Instr, NULL);
+      Node *opNode = makeNode(id, "=");
+      addChild(opNode, makeNode(id, $1));
+      addChild(opNode, $3);
+      addChild(tmp, opNode);
+      $$ = tmp;
+    }
+  | IF '(' Exp ')' Instr
+    {
+      Node *tmp = makeNode(Instr, NULL);
+      Node *ifNode = makeNode(id, "if");
+      addChild(ifNode, $3);
+      addChild(ifNode, $5);
+      addChild(tmp, ifNode);
+      $$ = tmp;
+    }
+  | IF '(' Exp ')' Instr ELSE Instr
+    {
+      Node *tmp = makeNode(Instr, NULL);
+      Node *ifNode = makeNode(id, "ifelse");
+      addChild(ifNode, $3);
+      addChild(ifNode, $5);
+      addChild(ifNode, $7);
+      addChild(tmp, ifNode);
+      $$ = tmp;
+    }
+  | WHILE '(' Exp ')' Instr
+    {
+      Node *tmp = makeNode(Instr, NULL);
+      Node *whileNode = makeNode(id, "while");
+      addChild(whileNode, $3);
+      addChild(whileNode, $5);
+      addChild(tmp, whileNode);
+      $$ = tmp;
+    }
+  | IDENT '(' Arguments ')' ';'
+    {
+      Node *tmp = makeNode(Instr, NULL);
+      Node *callNode = makeNode(id, "call");
+      addChild(callNode, makeNode(id, $1));
+      if ($3) addChild(callNode, $3);
+      addChild(tmp, callNode);
+      $$ = tmp;
+    }
+  | RETURN Exp ';'
+    {
+      Node *tmp = makeNode(Instr, NULL);
+      Node *retNode = makeNode(id, "return");
+      addChild(retNode, $2);
+      addChild(tmp, retNode);
+      $$ = tmp;
+    }
+  | RETURN ';'
+    {
+      Node *tmp = makeNode(Instr, NULL);
+      Node *retNode = makeNode(id, "return");
+      addChild(tmp, retNode);
+      $$ = tmp;
+    }
+  | '{' SuiteInstr '}'
+    {
+      if ($2) {
         Node *tmp = makeNode(Instr, NULL);
-        addChild(tmp, makeNode(id, $1));
-        addChild(tmp, makeNode(id, "="));
-        addChild(tmp, $3);
+        Node *blockNode = makeNode(id, "block");
+        addChild(blockNode, $2);
+        addChild(tmp, blockNode);
         $$ = tmp;
+      } else {
+        $$ = makeNode(Instr, "empty_block");
+      }
     }
-  | IF '(' Exp ')' Instr {
-        Node *tmp = makeNode(Instr, NULL);
-        addChild(tmp, makeNode(id, "if"));
-        addChild(tmp, $3);
-        addChild(tmp, $5);
-        $$ = tmp;
-    }
-  | IF '(' Exp ')' Instr ELSE Instr {
-        Node *tmp = makeNode(Instr, NULL);
-        addChild(tmp, makeNode(id, "ifelse"));
-        addChild(tmp, $3);
-        addChild(tmp, $5);
-        addChild(tmp, $7);
-        $$ = tmp;
-    }
-  | WHILE '(' Exp ')' Instr {
-        Node *tmp = makeNode(Instr, NULL);
-        addChild(tmp, makeNode(id, "while"));
-        addChild(tmp, $3);
-        addChild(tmp, $5);
-        $$ = tmp;
-    }
-  | IDENT '(' Arguments ')' ';' {
-        Node *tmp = makeNode(Instr, NULL);
-        Node *callNode = makeNode(id, "call");
-        addChild(callNode, makeNode(id, $1));
-        if ($3) addChild(callNode, $3);
-        addChild(tmp, callNode);
-        $$ = tmp;
-    }
-  | RETURN Exp ';' {
-        Node *tmp = makeNode(Instr, NULL);
-        addChild(tmp, makeNode(id, "return"));
-        addChild(tmp, $2);
-        $$ = tmp;
-    }
-  | RETURN ';' {
-        Node *tmp = makeNode(Instr, NULL);
-        addChild(tmp, makeNode(id, "return"));
-        $$ = tmp;
-    }
-  | '{' SuiteInstr '}' {
-        if ($2) {
-            Node *tmp = makeNode(Instr, NULL);
-            addChild(tmp, $2);
-            $$ = tmp;
-        } else {
-            $$ = makeNode(Instr, "empty_block");
-        }
-    }
-  | ';' {
-        $$ = makeNode(Instr, "empty_instr");
+  | ';'
+    {
+      $$ = makeNode(Instr, "empty_instr");
     }
 ;
 
-
-
 Exp:
-    Exp OR TB {
-        Node *tmp = makeNode(Exp, NULL);
-        addChild(tmp, $1);
-        addChild(tmp, makeNode(id, "||"));
-        addChild(tmp, $3);
-        $$ = tmp;
+    Exp OR TB
+    {
+      Node *tmp = makeNode(Exp, NULL);
+      Node *opNode = makeNode(id, "||");
+      addChild(opNode, $1);
+      addChild(opNode, $3);
+      addChild(tmp, opNode);
+      $$ = tmp;
     }
-  | TB { $$ = $1; }
+  | TB
+    { $$ = $1; }
 ;
 
 TB:
-    TB AND FB {
-        Node *tmp = makeNode(TB, NULL);
-        addChild(tmp, $1);
-        addChild(tmp, makeNode(id, "&&"));
-        addChild(tmp, $3);
-        $$ = tmp;
+    TB AND FB
+    {
+      Node *tmp = makeNode(TB, NULL);
+      Node *opNode = makeNode(id, "&&");
+      addChild(opNode, $1);
+      addChild(opNode, $3);
+      addChild(tmp, opNode);
+      $$ = tmp;
     }
-  | FB { $$ = $1; }
+  | FB
+    { $$ = $1; }
 ;
 
 FB:
-    FB EQ M {
-        Node *tmp = makeNode(FB, NULL);
-        addChild(tmp, $1);
-        addChild(tmp, makeNode(id, $2));
-        addChild(tmp, $3);
-        $$ = tmp;
+    FB EQ M
+    {
+      Node *tmp = makeNode(FB, NULL);
+      Node *opNode = makeNode(id, $2);
+      addChild(opNode, $1);
+      addChild(opNode, $3);
+      addChild(tmp, opNode);
+      $$ = tmp;
     }
-  | M { $$ = $1; }
+  | M
+    { $$ = $1; }
 ;
 
 M:
-    M ORDER E {
-        Node *tmp = makeNode(M, NULL);
-        addChild(tmp, $1);
-        addChild(tmp, makeNode(id, $2));
-        addChild(tmp, $3);
-        $$ = tmp;
+    M ORDER E
+    {
+      Node *tmp = makeNode(M, NULL);
+      Node *opNode = makeNode(id, $2);
+      addChild(opNode, $1);
+      addChild(opNode, $3);
+      addChild(tmp, opNode);
+      $$ = tmp;
     }
-  | E { $$ = $1; }
+  | E
+    { $$ = $1; }
 ;
 
 E:
-    E ADDSUB T {
-        Node *tmp = makeNode(E, NULL);
-        addChild(tmp, $1);
-        addChild(tmp, makeNode(id, $2));
-        addChild(tmp, $3);
-        $$ = tmp;
+    E ADDSUB T
+    {
+      Node *tmp = makeNode(E, NULL);
+      Node *opNode = makeNode(id, $2);
+      addChild(opNode, $1);
+      addChild(opNode, $3);
+      addChild(tmp, opNode);
+      $$ = tmp;
     }
-  | T { $$ = $1; }
+  | T
+    { $$ = $1; }
 ;
 
 T:
-    T DIVSTAR F {
-        Node *tmp = makeNode(T, NULL);
-        addChild(tmp, $1);
-        addChild(tmp, makeNode(id, $2));
-        addChild(tmp, $3);
-        $$ = tmp;
+    T DIVSTAR F
+    {
+      Node *tmp = makeNode(T, NULL);
+      Node *opNode = makeNode(id, $2);
+      addChild(opNode, $1);
+      addChild(opNode, $3);
+      addChild(tmp, opNode);
+      $$ = tmp;
     }
-  | F { $$ = $1; }
+  | F
+    { $$ = $1; }
 ;
 
 F:
-    ADDSUB F {
-        Node *tmp = makeNode(F, NULL);
-        addChild(tmp, makeNode(id, $1));
-        addChild(tmp, $2);
-        $$ = tmp;
+    ADDSUB F
+    {
+      Node *tmp = makeNode(F, NULL);
+      Node *opNode = makeNode(id, $1);
+      addChild(opNode, $2);
+      addChild(tmp, opNode);
+      $$ = tmp;
     }
-  | '!' F {
-        Node *tmp = makeNode(F, NULL);
-        addChild(tmp, makeNode(id, "!"));
-        addChild(tmp, $2);
-        $$ = tmp;
+  | '!' F
+    {
+      Node *tmp = makeNode(F, NULL);
+      Node *opNode = makeNode(id, "!");
+      addChild(opNode, $2);
+      addChild(tmp, opNode);
+      $$ = tmp;
     }
-  | '(' Exp ')' { $$ = $2; }
-  | NUM {
-        char buf[32]; snprintf(buf, sizeof(buf), "%d", $1);
-        $$ = makeNode(num, buf);
+  | '(' Exp ')'
+    {
+      $$ = $2;
     }
-  | CHARACTER {
-        char buf[2]; buf[0] = $1; buf[1] = '\0';
-        $$ = makeNode(id, buf);
+  | NUM
+    {
+      char buf[32];
+      snprintf(buf, sizeof(buf), "%d", $1);
+      $$ = makeNode(num, buf);
     }
-  | IDENT { $$ = makeNode(id, $1); }
-  | IDENT '(' Arguments ')' {
-        Node *tmp = makeNode(F, NULL);
-        Node *callNode = makeNode(id, "call");
-        addChild(callNode, makeNode(id, $1));
-        if ($3) addChild(callNode, $3);
-        addChild(tmp, callNode);
-        $$ = tmp;
+  | CHARACTER
+    {
+      char buf[2];
+      buf[0] = $1;
+      buf[1] = '\0';
+      $$ = makeNode(id, buf);
+    }
+  | IDENT
+    {
+      $$ = makeNode(id, $1);
+    }
+  | IDENT '(' Arguments ')'
+    {
+      Node *tmp = makeNode(F, NULL);
+      Node *callNode = makeNode(id, "call");
+      addChild(callNode, makeNode(id, $1));
+      if ($3) addChild(callNode, $3);
+      addChild(tmp, callNode);
+      $$ = tmp;
     }
 ;
 
-
-
 Arguments:
-    ListExp { $$ = $1; }
-  | { $$ = NULL; }
+    ListExp
+    { $$ = $1; }
+  | 
+    { $$ = NULL; }
 ;
 
 ListExp:
-    ListExp ',' Exp {
-        Node *tmp = $1 ? $1 : makeNode(ListExp, NULL);
-        addChild(tmp, $3);
-        $$ = tmp;
+    ListExp ',' Exp
+    {
+      Node *tmp = $1 ? $1 : makeNode(ListExp, NULL);
+      addChild(tmp, $3);
+      $$ = tmp;
     }
-  | Exp {
-        Node *tmp = makeNode(ListExp, NULL);
-        addChild(tmp, $1);
-        $$ = tmp;
+  | Exp
+    {
+      Node *tmp = makeNode(ListExp, NULL);
+      addChild(tmp, $1);
+      $$ = tmp;
     }
 ;
+
 
 %%
 
