@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "format": "c",
+        "__locale": "c",
+        "ios": "c",
+        "__node_handle": "c"
+    }
+}

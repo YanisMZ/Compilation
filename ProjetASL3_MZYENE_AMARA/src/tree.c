@@ -5,6 +5,7 @@
 #include <string.h>
 #include "tree.h"
 extern int lineno;       /* from lexer */
+Node *ast_root = NULL;
 
 static const char *StringFromLabel[] = {
   "Programme principale",        // Programme

@@ -3,6 +3,10 @@ CFLAGS = -Wall -g -Iobj -Isrc
 PARSER = le_parser
 LEXER = le_lexer
 
+
+
+bin/exo1:obj/
+
 bin/tpcas: obj/$(LEXER).o obj/$(PARSER).o obj/tree.o
 	$(CC) -o $@ $^
 
