@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "tree.h"
 #include <getopt.h> 
+#include "table.h"
 
 extern int yylineno;
 extern char* yytext;
@@ -521,9 +522,16 @@ int main(int argc, char *argv[]) {
 
     printf("Début de l'analyse syntaxique...\n");
     if (yyparse() == 0) {
-        printf("Analyse syntaxique réussie.\n");
-        if (show_tree && root) printTree(root);
-        return 0;
+    printf("Analyse syntaxique réussie.\n");
+
+    if (show_tree && root)
+        printTree(root);
+
+    if (root) {
+        traverse_ast_and_create_table(root);
+        print_symbols_table(globalTable);
+    }
+
     } else {
         printf("Erreur d'analyse syntaxique.\n");
         return 1;

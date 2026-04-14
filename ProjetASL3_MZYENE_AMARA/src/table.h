@@ -1,29 +1,67 @@
-/* symtable.h */
+#ifndef TABLE_H
+#define TABLE_H
 
-#ifndef SYMTABLE_H
-#define SYMTABLE_H
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "tree.h"
 
-typedef enum {
-    SYM_VAR_GLOBAL,
-    SYM_VAR_LOCAL,
-    SYM_PARAM,
-    SYM_FUNCTION
-} SymKind;
+/* ───────── catégories ───────── */
+typedef enum { VARIABLE, FUNCTION, STRUCT_TYPE } symbol_kind;
 
-typedef struct Symbol {
-    char name[64];
-    char type[64];
-    SymKind kind;
-    struct Symbol *next;
-} Symbol;
+/* ---------- structures ---------- */
 
 typedef struct {
-    Symbol *head;
+    char *type;
+    char *id;
+} var;
+
+/* ----- fonction ----- */
+typedef struct {
+    char  *return_type;
+    var   *params;
+    int    param_count;
+} func;
+
+/* ----- struct ----- */
+typedef struct {
+    char *field_name;
+    char *field_type;
+    int offset;
+} struct_field;
+
+typedef struct {
+    struct_field *fields;
+    int field_count;
+    int size;
+} struct_def;
+
+/* ----- symbole ----- */
+typedef struct SymbolTable {
+    symbol_kind  kind;
+    char        *id;
+
+    union {
+        var variable;
+        func function;
+        struct_def structure;
+    } data;
+
+    int   size;
+    char *address;
+    char *extra;
+
+    struct SymbolTable *next;
 } SymbolTable;
 
-SymbolTable* createTable();
-Symbol* lookup(SymbolTable *table, const char *name);
-Symbol* insert(SymbolTable *table, const char *name, const char *type, SymKind kind);
-void printTable(SymbolTable *table);
+/* table globale */
+extern SymbolTable *globalTable;
+
+/* API */
+SymbolTable *find_symbol(SymbolTable *, const char *);
+void traverse_ast_and_create_table(Node *);
+void print_symbols_table(SymbolTable *);
+void free_symbols_table(SymbolTable *);
+void add_global(const char *name, const char *type);
 
 #endif

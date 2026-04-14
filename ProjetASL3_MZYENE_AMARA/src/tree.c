@@ -8,31 +8,33 @@ extern int lineno;       /* from lexer */
 Node *ast_root = NULL;
 
 static const char *StringFromLabel[] = {
-  "Programme principale",        // Programme
-  "Declarations de Variables",   // DeclVars
-  "Liste de Déclarateurs",       // Declarateurs
-  "Decl des structures",         // StructDecls
-  "Decl d'une structure"         // StructDecl
-  "Decl des Fonctions",          // DeclFoncts
-  "Decl d'une Fonction",         // DeclFonct
-  "En-tête de Fonction",         // EnTeteFonct
-  "Paramètres",                  // Parametres
-  "Liste de Types de Variables", // ListTypVar
-  "Corps de Fonction",           // Corps
-  "Suite d'Instructions",        // SuiteInstr
-  "Instruction",                 // Instr
-  "Expression",                  // Exp
-  "Termes Booléens",             // TB
-  "Facteurs Booléens",           // FB
-  "Comparaison",                 // M
-  "ADDSUB",                      // E
-  "Terme",                       // T
-  "Facteur",                     // F
-  "Arguments",                   // Arguments
-  "Liste d'Expressions",         // ListExp
-  "DIVSTAR",                     // divstar
-  "Identificateur",              // id
-  "Nombre"                       // num
+  "Programme",                  // Programme
+  "DeclVars",                   // DeclVars
+  "Declarateurs",               // Declarateurs
+  "StructDecls",                // StructDecls
+  "StructDecl",                 // StructDecl
+  "StructFields",               // StructFields
+  "StructField",                // StructField
+  "DeclFoncts",                 // DeclFoncts
+  "DeclFonct",                  // DeclFonct
+  "EnTeteFonct",                // EnTeteFonct
+  "Parametres",                 // Parametres
+  "ListTypVar",                 // ListTypVar
+  "Corps",                      // Corps
+  "SuiteInstr",                 // SuiteInstr
+  "Instr",                      // Instr
+  "Exp",                        // Exp
+  "TB",                         // TB
+  "FB",                         // FB
+  "M",                          // M
+  "E",                          // E
+  "T",                          // T
+  "F",                          // F
+  "Arguments",                  // Arguments
+  "ListExp",                    // ListExp
+  "DIVSTAR",                    // divstar
+  "id",                         // id
+  "num"                         // num
 };
 
 Node *makeNode(label_t label, char* value) {
