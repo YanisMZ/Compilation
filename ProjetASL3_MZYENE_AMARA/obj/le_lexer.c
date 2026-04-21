@@ -993,7 +993,33 @@ case 33:
 YY_RULE_SETUP
 #line 71 "src/le_lexer.lex"
 { 
-    /* fprintf(stderr, "Erreur lexicale à la ligne %d, colonne %d : mot inattendu '%s'\n", 
+    /* fprinstatic const char *StringFromLabel[] = {
+  "Programme principale",        // Programme
+  "Declarations de Variables",   // DeclVars
+  "Liste de Déclarateurs",       // Declarateurs
+  "Decl des structures",         // StructDecls
+  "Decl d'une structure"         // StructDecl
+  "Decl des Fonctions",          // DeclFoncts
+  "Decl d'une Fonction",         // DeclFonct
+  "En-tête de Fonction",         // EnTeteFonct
+  "Paramètres",                  // Parametres
+  "Liste de Types de Variables", // ListTypVar
+  "Corps de Fonction",           // Corps
+  "Suite d'Instructions",        // SuiteInstr
+  "Instruction",                 // Instr
+  "Expression",                  // Exp
+  "Termes Booléens",             // TB
+  "Facteurs Booléens",           // FB
+  "Comparaison",                 // M
+  "ADDSUB",                      // E
+  "Terme",                       // T
+  "Facteur",                     // F
+  "Arguments",                   // Arguments
+  "Liste d'Expressions",         // ListExp
+  "DIVSTAR",                     // divstar
+  "Identificateur",              // id
+  "Nombre"                       // num
+};tf(stderr, "Erreur lexicale à la ligne %d, colonne %d : mot inattendu '%s'\n", 
             yylineno, yycolumn, yytext); */
     yycolumn += yyleng; 
     return yytext[0]; // Forcer une erreur lexicale
@@ -1001,10 +1027,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 78 "src/le_lexer.lex"
+#line 104 "src/le_lexer.lex"
 ECHO;
 	YY_BREAK
-#line 1008 "obj/le_lexer.c"
+#line 1034 "obj/le_lexer.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(COM1):
 case YY_STATE_EOF(COM2):
@@ -1982,7 +2008,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 78 "src/le_lexer.lex"
+#line 104 "src/le_lexer.lex"
 
 
 int yywrap(){

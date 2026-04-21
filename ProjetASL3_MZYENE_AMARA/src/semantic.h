@@ -5,4 +5,4 @@
 
 int check_semantics(Node *root);
 
-#endif // SEMANTIC_H
+#endif 

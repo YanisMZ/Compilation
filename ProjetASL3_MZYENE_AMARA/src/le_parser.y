@@ -4,13 +4,14 @@
 #include "tree.h"
 #include <getopt.h> 
 #include "table.h"
+#include "semantic.h"
 
 extern int yylineno;
 extern char* yytext;
 int yylex();
 
 int lineno = 1; // défini pour tree.c
-Node *root = NULL; // racine de l'arbre
+Node *root = NULL; 
 
 void yyerror(const char *s) {
     fprintf(stderr, "Erreur de syntaxe à la ligne %d: %s", yylineno, s);
@@ -521,19 +522,35 @@ int main(int argc, char *argv[]) {
     }
 
     printf("Début de l'analyse syntaxique...\n");
+
     if (yyparse() == 0) {
-    printf("Analyse syntaxique réussie.\n");
+        printf("Analyse syntaxique réussie.\n");
 
-    if (show_tree && root)
-        printTree(root);
+        if (show_tree && root)
+            printTree(root);
 
-    if (root) {
-        traverse_ast_and_create_table(root);
-        print_symbols_table(globalTable);
-    }
+        if (root) {
+            /* 1. Construire la table des symboles */
+            traverse_ast_and_create_table(root);
+            print_symbols_table(globalTable);
+
+            /* 2. Vérification sémantique */
+            printf("\nDébut de l'analyse sémantique...\n");
+
+            int sem_result = check_semantics(root);
+
+            if (sem_result == 0) {
+                printf("Analyse sémantique réussie.\n");
+            } else {
+                printf("Erreurs sémantiques détectées.\n");
+                return sem_result;
+            }
+        }
 
     } else {
         printf("Erreur d'analyse syntaxique.\n");
         return 1;
     }
+
+    return 0;
 }

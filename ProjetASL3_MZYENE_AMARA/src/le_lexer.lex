@@ -69,7 +69,33 @@ int yycolumn = 0;
 \n          { yycolumn = 0; }
 
 . { 
-    /* fprintf(stderr, "Erreur lexicale à la ligne %d, colonne %d : mot inattendu '%s'\n", 
+    /* fprinstatic const char *StringFromLabel[] = {
+  "Programme principale",        // Programme
+  "Declarations de Variables",   // DeclVars
+  "Liste de Déclarateurs",       // Declarateurs
+  "Decl des structures",         // StructDecls
+  "Decl d'une structure"         // StructDecl
+  "Decl des Fonctions",          // DeclFoncts
+  "Decl d'une Fonction",         // DeclFonct
+  "En-tête de Fonction",         // EnTeteFonct
+  "Paramètres",                  // Parametres
+  "Liste de Types de Variables", // ListTypVar
+  "Corps de Fonction",           // Corps
+  "Suite d'Instructions",        // SuiteInstr
+  "Instruction",                 // Instr
+  "Expression",                  // Exp
+  "Termes Booléens",             // TB
+  "Facteurs Booléens",           // FB
+  "Comparaison",                 // M
+  "ADDSUB",                      // E
+  "Terme",                       // T
+  "Facteur",                     // F
+  "Arguments",                   // Arguments
+  "Liste d'Expressions",         // ListExp
+  "DIVSTAR",                     // divstar
+  "Identificateur",              // id
+  "Nombre"                       // num
+};tf(stderr, "Erreur lexicale à la ligne %d, colonne %d : mot inattendu '%s'\n", 
             yylineno, yycolumn, yytext); */
     yycolumn += yyleng; 
     return yytext[0]; // Forcer une erreur lexicale
