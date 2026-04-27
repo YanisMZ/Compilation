@@ -1,0 +1,9 @@
+int id(int x) {
+    return x;
+}
+
+int main(void) {
+    int a;
+    a = id(id(3));
+    return 0;
+}

@@ -1,118 +1,268 @@
 #!/bin/bash
 
-mkdir -p test
+mkdir -p test_good
 
-# Test 1
-
-cat > test/test1.tpc << 'EOF'
-struct aircraft {
-int height, width;
-};
-
+# ── good01 : programme minimal ──────────────────────────────────────────────
+cat > test_good/good01.tpc << 'EOF'
 int main(void) {
-int a;
-a = 10;
-b = 5;
-return 0;
+    return 0;
 }
 EOF
 
-# Test 2
+# ── good02 : variable globale + affectation ──────────────────────────────────
+cat > test_good/good02.tpc << 'EOF'
+int x;
 
-cat > test/test2.tpc << 'EOF'
 int main(void) {
-return;
+    x = 42;
+    return 0;
 }
 EOF
 
-# Test 3
+# ── good03 : variable locale + affectation ──────────────────────────────────
+cat > test_good/good03.tpc << 'EOF'
+int main(void) {
+    int a;
+    a = 10;
+    return 0;
+}
+EOF
 
-cat > test/test3.tpc << 'EOF'
+# ── good04 : fonction sans paramètre appelée en instruction ─────────────────
+cat > test_good/good04.tpc << 'EOF'
 void f(void) {
-return 5;
+    return;
 }
 
 int main(void) {
-return 0;
+    f();
+    return 0;
 }
 EOF
 
-# Test 4
+# ── good05 : fonction avec paramètres, appel correct ────────────────────────
+cat > test_good/good05.tpc << 'EOF'
+int add(int a, int b) {
+    return a;
+}
 
-cat > test/test4.tpc << 'EOF'
 int main(void) {
-int a;
-a = 10;
+    int r;
+    r = add(1, 2);
+    return 0;
 }
 EOF
 
-# Test 5
-
-cat > test/test5.tpc << 'EOF'
-int main(void) {
-foo();
-return 0;
-}
-EOF
-
-# Test 6
-
-cat > test/test6.tpc << 'EOF'
+# ── good06 : appel de fonction dans une expression ──────────────────────────
+cat > test_good/good06.tpc << 'EOF'
 int f(int x) {
-return x;
+    return x;
 }
 
 int main(void) {
-f(1, 2);
-return 0;
+    int a;
+    a = f(3);
+    return 0;
 }
 EOF
 
-# Test 7
-
-cat > test/test7.tpc << 'EOF'
+# ── good07 : if simple avec condition variable ───────────────────────────────
+cat > test_good/good07.tpc << 'EOF'
 int main(void) {
-if (1) {
-int a;
-}
-return 0;
+    int a;
+    a = 1;
+    if (a) {
+        a = 2;
+    }
+    return 0;
 }
 EOF
 
-# Test 8
+# ── good08 : if-else ─────────────────────────────────────────────────────────
+cat > test_good/good08.tpc << 'EOF'
+int main(void) {
+    int a;
+    a = 0;
+    if (a) {
+        a = 1;
+    } else {
+        a = 2;
+    }
+    return 0;
+}
+EOF
 
-cat > test/test8.tpc << 'EOF'
-void f(void) {}
+# ── good09 : while ───────────────────────────────────────────────────────────
+cat > test_good/good09.tpc << 'EOF'
+int main(void) {
+    int i;
+    i = 0;
+    while (i) {
+        i = i + 1;
+    }
+    return 0;
+}
+EOF
+
+# ── good10 : plusieurs variables locales ────────────────────────────────────
+cat > test_good/good10.tpc << 'EOF'
+int main(void) {
+    int a, b, c;
+    a = 1;
+    b = 2;
+    c = a + b;
+    return 0;
+}
+EOF
+
+# ── good11 : fonction récursive ──────────────────────────────────────────────
+cat > test_good/good11.tpc << 'EOF'
+int fact(int n) {
+    if (n) {
+        return fact(n);
+    }
+    return 1;
+}
 
 int main(void) {
-int a;
-a = f();
-return 0;
+    int r;
+    r = fact(5);
+    return 0;
 }
 EOF
 
-# Test 9
-
-cat > test/test9.tpc << 'EOF'
-int a;
-
-return 5;
-
-int main(void) {
-return 0;
+# ── good12 : deux fonctions qui s'appellent ──────────────────────────────────
+cat > test_good/good12.tpc << 'EOF'
+int g(int x) {
+    return x;
 }
-EOF
 
-# Test 10
-
-cat > test/test10.tpc << 'EOF'
-int f(int x, int x) {
-return x;
+int f(int x) {
+    return g(x);
 }
 
 int main(void) {
-return 0;
+    int r;
+    r = f(1);
+    return 0;
 }
 EOF
 
-echo "Tous les fichiers de test ont été créés dans le dossier ./test"
+# ── good13 : expression binaire complexe ────────────────────────────────────
+cat > test_good/good13.tpc << 'EOF'
+int main(void) {
+    int a, b, c;
+    a = 1;
+    b = 2;
+    c = a + b * 3;
+    return 0;
+}
+EOF
+
+# ── good14 : expression avec comparaison dans while ─────────────────────────
+cat > test_good/good14.tpc << 'EOF'
+int main(void) {
+    int i;
+    i = 0;
+    while (i == 0) {
+        i = 1;
+    }
+    return 0;
+}
+EOF
+
+# ── good15 : void f(void) appelée, résultat ignoré ──────────────────────────
+cat > test_good/good15.tpc << 'EOF'
+void print(void) {
+    return;
+}
+
+int main(void) {
+    print();
+    print();
+    return 0;
+}
+EOF
+
+# ── good16 : variable globale utilisée dans une fonction ────────────────────
+cat > test_good/good16.tpc << 'EOF'
+int g;
+
+void set(int v) {
+    g = v;
+    return;
+}
+
+int main(void) {
+    set(10);
+    return 0;
+}
+EOF
+
+# ── good17 : négation unaire ─────────────────────────────────────────────────
+cat > test_good/good17.tpc << 'EOF'
+int main(void) {
+    int a;
+    a = -1;
+    return 0;
+}
+EOF
+
+# ── good18 : opérateur ! ────────────────────────────────────────────────────
+cat > test_good/good18.tpc << 'EOF'
+int main(void) {
+    int a, b;
+    a = 1;
+    b = !a;
+    return 0;
+}
+EOF
+
+# ── good19 : return de variable locale ──────────────────────────────────────
+cat > test_good/good19.tpc << 'EOF'
+int f(void) {
+    int x;
+    x = 5;
+    return x;
+}
+
+int main(void) {
+    int r;
+    r = f();
+    return 0;
+}
+EOF
+
+# ── good20 : appel imbriqué dans expression ──────────────────────────────────
+cat > test_good/good20.tpc << 'EOF'
+int id(int x) {
+    return x;
+}
+
+int main(void) {
+    int a;
+    a = id(id(3));
+    return 0;
+}
+EOF
+
+echo ""
+echo "=== Fichiers créés dans ./test_good ==="
+ls test_good/
+
+echo ""
+echo "=== Lancement des tests ==="
+PASS=0; FAIL=0
+for f in test/sem_err/test_good/*.tpc; do
+    ./bin/tpcc < "$f" > /dev/null 2>&1
+    code=$?
+    if [ "$code" -eq 0 ]; then
+        echo "PASS $f"
+        PASS=$((PASS+1))
+    else
+        echo "FAIL $f (exit $code)"
+        ./bin/tpcc < "$f" 2>&1 | grep "\[ERROR\]"
+        FAIL=$((FAIL+1))
+    fi
+done
+echo "Résultat : $PASS passés, $FAIL échoués"

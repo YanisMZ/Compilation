@@ -1,0 +1,12 @@
+int fact(int n) {
+    if (n) {
+        return fact(n);
+    }
+    return 1;
+}
+
+int main(void) {
+    int r;
+    r = fact(5);
+    return 0;
+}

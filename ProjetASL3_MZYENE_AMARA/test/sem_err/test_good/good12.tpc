@@ -1,0 +1,13 @@
+int g(int x) {
+    return x;
+}
+
+int f(int x) {
+    return g(x);
+}
+
+int main(void) {
+    int r;
+    r = f(1);
+    return 0;
+}

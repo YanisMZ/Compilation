@@ -1,0 +1,11 @@
+int g;
+
+void set(int v) {
+    g = v;
+    return;
+}
+
+int main(void) {
+    set(10);
+    return 0;
+}
