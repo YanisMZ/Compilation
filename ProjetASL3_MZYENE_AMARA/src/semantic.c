@@ -119,9 +119,17 @@ static const char *infer_expr_type(Node *n) {
             SEM_ERR("utilisation d'une fonction void dans une expression ('%s')", fname);
 
         /* arguments: Arguments → ListExp → Exp* */
-        Node *argsNode = fnNode->nextSibling;          /* Arguments or NULL */
-        Node *listExp  = argsNode ? argsNode->firstChild : NULL; /* ListExp  */
-        Node *a        = listExp  ? listExp->firstChild  : NULL; /* first Exp */
+        Node *argsNode = fnNode->nextSibling;          /* Arguments or ListExp or NULL */
+        Node *listExp  = argsNode;
+        if (listExp && listExp->label == Arguments)
+            listExp = listExp->firstChild;
+        Node *a = NULL;
+        if (listExp) {
+            if (listExp->label == ListExp)
+                a = listExp->firstChild;
+            else
+                a = listExp;
+        }
 
         int expected = s->data.function.param_count;
         int actual   = 0;
@@ -370,8 +378,16 @@ static void check_node(Node *n) {
 
         /* arguments : Arguments → ListExp → Exp* */
         Node *argsNode = fnNode->nextSibling;
-        Node *listExp  = argsNode ? argsNode->firstChild : NULL;
-        Node *a        = listExp  ? listExp->firstChild  : NULL;
+        Node *listExp  = argsNode;
+        if (listExp && listExp->label == Arguments)
+            listExp = listExp->firstChild;
+        Node *a = NULL;
+        if (listExp) {
+            if (listExp->label == ListExp)
+                a = listExp->firstChild;
+            else
+                a = listExp;
+        }
 
         int expected = s->data.function.param_count;
         int actual   = 0;

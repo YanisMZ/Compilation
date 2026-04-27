@@ -141,10 +141,18 @@ static void add_function(Node *n)
                 Node *typeNode = p->firstChild;
                 Node *idNode = typeNode->nextSibling;
 
-                params = realloc(params, sizeof(var)*(count+1));
+const char *param_id = idNode->value;
 
-                params[count].type = strdup(typeNode->value);
-                params[count].id = strdup(idNode->value);
+            for (int j = 0; j < count; j++) {
+                if (!strcmp(params[j].id, param_id)) {
+                    fprintf(stderr, "Erreur: paramètre '%s' dupliqué dans la fonction %s\n", param_id, fname);
+                    exit(2);
+                }
+            }
+
+            params = realloc(params, sizeof(var)*(count+1));
+            params[count].type = strdup(typeNode->value);
+            params[count].id = strdup(param_id);
 
                 count++;
             }
