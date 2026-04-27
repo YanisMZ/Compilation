@@ -1,0 +1,12 @@
+# Compressed files
+*.zip
+*.7z
+*.tar.gz
+*.rar
+
+# Windows metadata files
+*:Zone.Identifier
+
+# Specific project folders/files
+sem/
+sem.7z
