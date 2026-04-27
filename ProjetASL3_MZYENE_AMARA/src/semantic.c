@@ -19,6 +19,7 @@ static int error_count = 0;
 static int warning_count = 0;
 
 static SymbolTable *current_fn = NULL;
+static SymbolTable *current_locals = NULL;
 static int has_return = 0;
 
 /* ================= UTIL ================= */
@@ -31,7 +32,7 @@ static int is_same(const char *a, const char *b) {
 
 /*
  * Cherche un symbole : d'abord dans les paramètres de la fonction courante,
- * puis dans la table globale.
+ * puis dans la portée locale, puis dans la table globale.
  * Retourne NULL si non trouvé.
  */
 /*
@@ -50,6 +51,12 @@ static const char *lookup_type(const char *name) {
         }
     }
 
+    /* portée locale */
+    for (SymbolTable *s = current_locals; s; s = s->next) {
+        if (s->kind == VARIABLE && !strcmp(s->id, name))
+            return s->data.variable.type;
+    }
+
     SymbolTable *s = find_symbol(globalTable, name);
     if (!s) return NULL;
 
@@ -60,6 +67,72 @@ static const char *lookup_type(const char *name) {
         return s->data.function.return_type;
 
     return NULL;
+}
+
+static void free_local_variables(void) {
+    while (current_locals) {
+        SymbolTable *next = current_locals->next;
+        free(current_locals->id);
+        free(current_locals->data.variable.type);
+        free(current_locals);
+        current_locals = next;
+    }
+}
+
+static int add_local_variable(const char *name, const char *type) {
+    if (!name || !type) return 0;
+
+    for (SymbolTable *s = current_locals; s; s = s->next) {
+        if (s->kind == VARIABLE && !strcmp(s->id, name)) {
+            SEM_ERR("redéfinition de %s", name);
+            return 0;
+        }
+    }
+
+    if (current_fn) {
+        for (int i = 0; i < current_fn->data.function.param_count; i++) {
+            var p = current_fn->data.function.params[i];
+            if (!strcmp(p.id, name)) {
+                SEM_ERR("redéfinition de %s", name);
+                return 0;
+            }
+        }
+    }
+
+    SymbolTable *entry = calloc(1, sizeof *entry);
+    entry->kind = VARIABLE;
+    entry->id = strdup(name);
+    entry->data.variable.type = strdup(type);
+    entry->next = current_locals;
+    current_locals = entry;
+    return 1;
+}
+
+static void collect_local_variables(Node *n) {
+    if (!n) return;
+
+    if (n->label == DeclVars) {
+        for (Node *decl = n->firstChild; decl; decl = decl->nextSibling) {
+            if (!decl || !decl->firstChild) continue;
+
+            Node *typeNode = decl->firstChild;
+            Node *decls = typeNode->nextSibling;
+            if (!typeNode || !decls) continue;
+
+            const char *type = typeNode->value;
+            if (type && !strcmp(type, "struct") && typeNode->firstChild)
+                type = typeNode->firstChild->value;
+
+            for (Node *idN = decls->firstChild; idN; idN = idN->nextSibling) {
+                if (!idN || !idN->value) continue;
+                add_local_variable(idN->value, type);
+            }
+        }
+        return;
+    }
+
+    for (Node *child = n->firstChild; child; child = child->nextSibling)
+        collect_local_variables(child);
 }
 
 /* ================= TYPE INFERENCE ================= */
@@ -217,9 +290,16 @@ static void handle_function(Node *n) {
         return;
     }
 
+    /* collecter les variables locales de la fonction */
+    current_locals = NULL;
+    collect_local_variables(n);
+
     /* parcourir le corps */
     for (Node *c = n->firstChild; c; c = c->nextSibling)
         check_node(c);
+
+    free_local_variables();
+    current_locals = NULL;
 
     /* avertissement si une fonction non-void ne contient aucun return */
     if (!is_same(current_fn->data.function.return_type, "void") && !has_return)

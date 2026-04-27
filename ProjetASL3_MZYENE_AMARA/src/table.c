@@ -165,7 +165,7 @@ const char *param_id = idNode->value;
 
 /* ===================== TRAVERSAL ===================== */
 
-void traverse_ast_and_create_table(Node *n)
+static void traverse_ast_and_create_table_impl(Node *n, int in_function)
 {
     if (!n) return;
 
@@ -175,7 +175,7 @@ void traverse_ast_and_create_table(Node *n)
     }
 
     /* ===================== VARIABLES ===================== */
-    if (n->label == DeclVars) {
+    if (n->label == DeclVars && !in_function) {
 
         for (Node *decl = n->firstChild; decl; decl = decl->nextSibling) {
 
@@ -206,15 +206,27 @@ void traverse_ast_and_create_table(Node *n)
     /* ===================== FONCTIONS ===================== */
     if (n->label == DeclFonct) {
         add_function(n);
+        if (n->firstChild)
+            traverse_ast_and_create_table_impl(n->firstChild, 1);
+        if (n->firstChild && n->firstChild->nextSibling)
+            traverse_ast_and_create_table_impl(n->firstChild->nextSibling, 1);
+        if (n->nextSibling)
+            traverse_ast_and_create_table_impl(n->nextSibling, in_function);
+        return;
     }
 
     /* ===================== RECURSION SAFE ===================== */
 
     if (n->firstChild)
-        traverse_ast_and_create_table(n->firstChild);
+        traverse_ast_and_create_table_impl(n->firstChild, in_function);
 
     if (n->nextSibling)
-        traverse_ast_and_create_table(n->nextSibling);
+        traverse_ast_and_create_table_impl(n->nextSibling, in_function);
+}
+
+void traverse_ast_and_create_table(Node *n)
+{
+    traverse_ast_and_create_table_impl(n, 0);
 }
 
 /* ===================== PRINT ===================== */
