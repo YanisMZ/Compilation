@@ -1,0 +1,11 @@
+struct S {
+    int a;
+    char b;
+};
+
+int main(void) {
+    struct S x;
+    x.a = 1;
+    x.b = 'z';
+    return 0;
+}

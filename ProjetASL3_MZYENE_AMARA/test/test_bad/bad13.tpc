@@ -1,0 +1,4 @@
+int main(void) {
+    struct Unknown x;
+    return 0;
+}

@@ -1,0 +1,9 @@
+struct S {
+    int a;
+};
+
+struct S x;
+
+int main(void) {
+    return 0;
+}

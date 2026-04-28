@@ -1,0 +1,7 @@
+int main(void) {
+    char c;
+    int n;
+    c = 'a';
+    n = c + 1;
+    return 0;
+}

@@ -1,0 +1,10 @@
+struct S {
+    int a;
+};
+
+struct S g;
+
+int main(void) {
+    g.a = 10;
+    return 0;
+}

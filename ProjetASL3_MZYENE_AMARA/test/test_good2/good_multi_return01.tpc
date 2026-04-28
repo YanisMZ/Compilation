@@ -1,0 +1,12 @@
+int sign(int n) {
+    if (n) {
+        return 1;
+    }
+    return 0;
+}
+
+int main(void) {
+    int r;
+    r = sign(5);
+    return 0;
+}

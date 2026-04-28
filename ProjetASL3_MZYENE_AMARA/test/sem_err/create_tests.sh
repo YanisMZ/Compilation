@@ -246,6 +246,181 @@ int main(void) {
 }
 EOF
 
+# ── good21 : déclaration simple de structure ────────────────────────────────
+cat > test_good/good21.tpc << 'EOF'
+struct S {
+    int a;
+};
+
+int main(void) {
+    return 0;
+}
+EOF
+
+# ── good22 : variable de type struct ────────────────────────────────────────
+cat > test_good/good22.tpc << 'EOF'
+struct S {
+    int a;
+};
+
+struct S x;
+
+int main(void) {
+    return 0;
+}
+EOF
+
+# ── good23 : accès à un champ ───────────────────────────────────────────────
+cat > test_good/good23.tpc << 'EOF'
+struct S {
+    int a;
+};
+
+int main(void) {
+    struct S x;
+    x.a = 5;
+    return 0;
+}
+EOF
+
+# ── good24 : lecture d’un champ ─────────────────────────────────────────────
+cat > test_good/good24.tpc << 'EOF'
+struct S {
+    int a;
+};
+
+int main(void) {
+    struct S x;
+    int y;
+    y = x.a;
+    return 0;
+}
+EOF
+
+# ── good25 : plusieurs champs ───────────────────────────────────────────────
+cat > test_good/good25.tpc << 'EOF'
+struct S {
+    int a;
+    int b;
+};
+
+int main(void) {
+    struct S x;
+    x.a = 1;
+    x.b = 2;
+    return 0;
+}
+EOF
+
+# ── good26 : struct passée en paramètre ─────────────────────────────────────
+cat > test_good/good26.tpc << 'EOF'
+struct S {
+    int a;
+};
+
+int f(struct S s) {
+    return s.a;
+}
+
+int main(void) {
+    struct S x;
+    int r;
+    r = f(x);
+    return 0;
+}
+EOF
+
+# ── good27 : struct retournée par fonction ──────────────────────────────────
+cat > test_good/good27.tpc << 'EOF'
+struct S {
+    int a;
+};
+
+struct S f(void) {
+    struct S x;
+    return x;
+}
+
+int main(void) {
+    struct S y;
+    y = f();
+    return 0;
+}
+EOF
+
+# ── good28 : struct dans struct ─────────────────────────────────────────────
+cat > test_good/good28.tpc << 'EOF'
+struct A {
+    int x;
+};
+
+struct B {
+    struct A a;
+};
+
+int main(void) {
+    struct B b;
+    b.a.x = 3;
+    return 0;
+}
+EOF
+
+# ── good29 : même nom struct et variable (autorisé) ─────────────────────────
+cat > test_good/good29.tpc << 'EOF'
+struct S {
+    int a;
+};
+
+int S;
+
+int main(void) {
+    struct S x;
+    S = 5;
+    return 0;
+}
+EOF
+
+# ── good30 : struct globale utilisée dans fonction ──────────────────────────
+cat > test_good/good30.tpc << 'EOF'
+struct S {
+    int a;
+};
+
+struct S g;
+
+int main(void) {
+    g.a = 10;
+    return 0;
+}
+EOF
+
+# ── good31 : affectation de struct ──────────────────────────────────────────
+cat > test_good/good31.tpc << 'EOF'
+struct S {
+    int a;
+};
+
+int main(void) {
+    struct S x, y;
+    x = y;
+    return 0;
+}
+EOF
+
+# ── good32 : champ utilisé dans expression ──────────────────────────────────
+cat > test_good/good32.tpc << 'EOF'
+struct S {
+    int a;
+};
+
+int main(void) {
+    struct S x;
+    int y;
+    y = x.a + 1;
+    return 0;
+}
+EOF
+
 echo ""
 echo "=== Fichiers créés dans ./test_good ==="
 ls test_good/

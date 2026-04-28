@@ -158,111 +158,105 @@ static void collect_local_variables(Node *n) {
 static const char *infer_expr_type(Node *n) {
     if (!n) return "int";
 
-    /* ── Transparent wrapper (Exp/TB/FB/M/E/T/F with one child) ── */
+    /* ── wrappers ── */
     if (n->label != id && n->label != num) {
         if (n->firstChild && !n->firstChild->nextSibling)
             return infer_expr_type(n->firstChild);
-        /* multi-child intermediate: recurse on first child
-           (binary ops are stored directly as id nodes already) */
         if (n->firstChild)
             return infer_expr_type(n->firstChild);
         return "int";
     }
 
-    /* ── Integer literal ── */
+    /* ── literal ── */
     if (n->label == num)
         return "int";
 
-    /* n->label == id from here on */
+    /* ===================================================== */
+    /* 🔥 STRUCT CHAIN : b.a.x */
+    /* ===================================================== */
+    if (n->value && strcmp(n->value, ".") == 0) {
 
-    /* ── Function call:  id("call") → id(fname) [→ Arguments] ── */
+        Node *left = n->firstChild;
+        Node *right = left ? left->nextSibling : NULL;
+
+        if (!left || !right) {
+            SEM_ERR("accès struct invalide");
+            return "int";
+        }
+
+        const char *base_type = infer_expr_type(left);
+
+        if (!base_type) {
+            SEM_ERR("type inconnu pour struct");
+            return "int";
+        }
+
+        SymbolTable *s = find_symbol(globalTable, base_type);
+
+        if (!s || s->kind != STRUCT_TYPE) {
+            SEM_ERR("'%s' n'est pas un struct", base_type);
+            return "int";
+        }
+
+        /* chercher champ */
+        for (int i = 0; i < s->data.structure.field_count; i++) {
+            struct_field f = s->data.structure.fields[i];
+
+            if (!strcmp(f.field_name, right->value)) {
+                return f.field_type;
+            }
+        }
+
+        SEM_ERR("champ '%s' inexistant dans struct '%s'",
+                right->value, base_type);
+        return "int";
+    }
+
+    /* ── fonction call ── */
     if (n->value && strcmp(n->value, "call") == 0) {
         Node *fnNode = n->firstChild;
         if (!fnNode || !fnNode->value) return "int";
 
-        const char *fname = fnNode->value;
-        SymbolTable *s = find_symbol(globalTable, fname);
+        SymbolTable *s = find_symbol(globalTable, fnNode->value);
 
         if (!s || s->kind != FUNCTION) {
-            SEM_ERR("fonction inconnue '%s'", fname);
+            SEM_ERR("fonction inconnue '%s'", fnNode->value);
             return "int";
-        }
-
-        if (is_same(s->data.function.return_type, "void"))
-            SEM_ERR("utilisation d'une fonction void dans une expression ('%s')", fname);
-
-        /* arguments: Arguments → ListExp → Exp* */
-        Node *argsNode = fnNode->nextSibling;          /* Arguments or ListExp or NULL */
-        Node *listExp  = argsNode;
-        if (listExp && listExp->label == Arguments)
-            listExp = listExp->firstChild;
-        Node *a = NULL;
-        if (listExp) {
-            if (listExp->label == ListExp)
-                a = listExp->firstChild;
-            else
-                a = listExp;
-        }
-
-        int expected = s->data.function.param_count;
-        int actual   = 0;
-        for (Node *tmp = a; tmp; tmp = tmp->nextSibling) actual++;
-
-        if (actual != expected) {
-            SEM_ERR("nb args incorrect pour '%s' (%d attendu, %d trouvé)",
-                    fname, expected, actual);
-            return s->data.function.return_type;
-        }
-
-        for (int i = 0; i < expected; i++) {
-            const char *expected_t = s->data.function.params[i].type;
-            const char *actual_t   = infer_expr_type(a);
-
-            if (!is_same(expected_t, actual_t))
-                SEM_ERR("type argument %d incorrect pour '%s' (%s attendu, %s trouvé)",
-                        i + 1, fname, expected_t, actual_t);
-
-            a = a->nextSibling;
         }
 
         return s->data.function.return_type;
     }
 
-    /* ── Unary operator:  id("-" or "!") with exactly one child ── */
-    if (n->value && n->firstChild && !n->firstChild->nextSibling) {
-        if (strcmp(n->value, "!") == 0)  return "int";
-        if (strcmp(n->value, "-") == 0)  return infer_expr_type(n->firstChild);
-        if (strcmp(n->value, "+") == 0)  return infer_expr_type(n->firstChild);
-    }
+    /* ── unary ── */
+    if (n->value && n->firstChild && !n->firstChild->nextSibling)
+        return infer_expr_type(n->firstChild);
 
-    /* ── Binary operator:  id(op) with two children ── */
+    /* ── binary ── */
     if (n->value && n->firstChild && n->firstChild->nextSibling) {
         const char *t1 = infer_expr_type(n->firstChild);
         const char *t2 = infer_expr_type(n->firstChild->nextSibling);
 
-        if (!t1 || !t2) return "int";
+        if (!strcmp(n->value, "+") || !strcmp(n->value, "-") ||
+            !strcmp(n->value, "*") || !strcmp(n->value, "/")) {
 
-        /* relational / equality operators → int (boolean) */
-        if (strcmp(n->value, "==") == 0 || strcmp(n->value, "!=") == 0 ||
-            strcmp(n->value, "<")  == 0 || strcmp(n->value, ">")  == 0 ||
-            strcmp(n->value, "<=") == 0 || strcmp(n->value, ">=") == 0 ||
-            strcmp(n->value, "&&") == 0 || strcmp(n->value, "||") == 0)
+            if (!strcmp(t1, "double") || !strcmp(t2, "double"))
+                return "double";
+
             return "int";
-
-        /* arithmetic: promote to double if either operand is double */
-        if (is_same(t1, "double") || is_same(t2, "double"))
-            return "double";
+        }
 
         return "int";
     }
 
-    /* ── Plain identifier (variable or parameter) ── */
+    /* ── id ── */
     if (n->value) {
         const char *t = lookup_type(n->value);
+
         if (!t) {
             SEM_ERR("variable non déclarée '%s'", n->value);
             return "int";
         }
+
         return t;
     }
 
@@ -371,29 +365,37 @@ static void check_node(Node *n) {
 
     /* ─── affectation ─── */
     else if (strcmp(c->value, "=") == 0) {
-        Node *lhs = c->firstChild;
-        Node *rhs = lhs ? lhs->nextSibling : NULL;
 
-        if (!lhs || !rhs) return;
+    Node *lhs = c->firstChild;
+    Node *rhs = lhs ? lhs->nextSibling : NULL;
 
-        if (!lhs->value) {
-            SEM_ERR("membre gauche d'affectation invalide");
-            return;
-        }
+    if (!lhs || !rhs) return;
 
-        const char *lt = lookup_type(lhs->value);
-        if (!lt) {
-            SEM_ERR("variable non déclarée '%s'", lhs->value);
-            return;
-        }
+    /* ── inférence des types ── */
+    const char *lt = infer_expr_type(lhs);
+    const char *rt = infer_expr_type(rhs);
 
-        const char *rt = infer_expr_type(rhs);
-
-        if (is_same(rt, "void"))
-            SEM_ERR("affectation d'une expression de type void");
-        else if (!is_same(lt, rt))
-            SEM_ERR("types incompatibles dans l'affectation ('%s' = '%s')", lt, rt);
+    /* ── erreurs de base ── */
+    if (!lt) {
+        SEM_ERR("LHS invalide dans affectation");
+        return;
     }
+
+    if (!rt) {
+        SEM_ERR("RHS invalide dans affectation");
+        return;
+    }
+
+    if (is_same(rt, "void")) {
+        SEM_ERR("affectation d'une expression de type void");
+        return;
+    }
+
+    /* ── compatibilité des types ── */
+    if (!is_same(lt, rt)) {
+        SEM_ERR("types incompatibles dans l'affectation (%s = %s)", lt, rt);
+    }
+}
 
     /* ─── if ─── */
     else if (strcmp(c->value, "if") == 0) {

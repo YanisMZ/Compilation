@@ -1,0 +1,17 @@
+struct Point {
+    int x;
+    int y;
+};
+
+struct Color {
+    int r;
+    int g;
+};
+
+int main(void) {
+    struct Point p;
+    struct Color c;
+    p.x = 0;
+    c.r = 255;
+    return 0;
+}

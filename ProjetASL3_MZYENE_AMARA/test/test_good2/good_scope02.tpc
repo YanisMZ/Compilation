@@ -1,0 +1,11 @@
+struct node {
+    int val;
+};
+
+int node;
+
+int main(void) {
+    struct node x;
+    node = 3;
+    return 0;
+}

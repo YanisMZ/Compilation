@@ -1,0 +1,9 @@
+int f(void) {
+    return;
+}
+
+int main(void) {
+    int r;
+    r = f();
+    return 0;
+}

@@ -48,7 +48,7 @@ void print_help() {
               Arguments ListExp 
 
 %start Prog
-%expect 4
+%expect 6
 %%
 
 Prog:
@@ -263,11 +263,11 @@ SuiteInstr:
 ;
 
 Instr:
-    IDENT '=' Exp ';'
+    F '=' Exp ';'
     {
       Node *tmp = makeNode(Instr, NULL);
       Node *opNode = makeNode(id, "=");
-      addChild(opNode, makeNode(id, $1));
+      addChild(opNode, $1);  // peut être IDENT ou g.a
       addChild(opNode, $3);
       addChild(tmp, opNode);
       $$ = tmp;
@@ -441,6 +441,15 @@ F:
       Node *opNode = makeNode(id, "!");
       addChild(opNode, $2);
       addChild(tmp, opNode);
+      $$ = tmp;
+    }
+  | F '.' IDENT   /* 🔥 AJOUT PRINCIPAL */
+    {
+      Node *tmp = makeNode(F, NULL);
+      Node *dotNode = makeNode(id, ".");
+      addChild(dotNode, $1);               // gauche (g ou g.a)
+      addChild(dotNode, makeNode(id, $3)); // champ
+      addChild(tmp, dotNode);
       $$ = tmp;
     }
   | '(' Exp ')'

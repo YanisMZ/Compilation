@@ -1,0 +1,13 @@
+struct A {
+    int x;
+};
+
+struct B {
+    struct A a;
+};
+
+int main(void) {
+    struct B b;
+    b.a.x = 3;
+    return 0;
+}

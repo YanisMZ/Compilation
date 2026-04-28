@@ -1,0 +1,6 @@
+char g;
+
+int main(void) {
+    g = 'x';
+    return 0;
+}
