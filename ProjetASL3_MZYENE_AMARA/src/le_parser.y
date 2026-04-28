@@ -464,10 +464,12 @@ F:
     }
   | CHARACTER
     {
-      char buf[2];
-      buf[0] = $1;
-      buf[1] = '\0';
-      $$ = makeNode(id, buf);
+      /* Stocker le char literal avec ses quotes : value = "'a'"
+         et label = num (c'est un littéral, pas une variable).
+         Le sémentique reconnaîtra value[0] == '\'' => type char. */
+      char buf[4];
+      snprintf(buf, sizeof(buf), "'%c'", $1);
+      $$ = makeNode(num, buf);
     }
   | IDENT
     {

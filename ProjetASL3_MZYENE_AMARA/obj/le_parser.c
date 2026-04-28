@@ -569,8 +569,8 @@ static const yytype_int16 yyrline[] =
      194,   201,   211,   216,   224,   232,   245,   257,   262,   266,
      275,   284,   294,   303,   312,   320,   327,   339,   346,   355,
      360,   369,   374,   383,   388,   397,   402,   411,   416,   425,
-     430,   438,   446,   455,   459,   465,   472,   476,   488,   491,
-     495,   501
+     430,   438,   446,   455,   459,   465,   474,   478,   490,   493,
+     497,   503
 };
 #endif
 
@@ -1793,24 +1793,26 @@ yyreduce:
   case 55: /* F: CHARACTER  */
 #line 466 "src/le_parser.y"
     {
-      char buf[2];
-      buf[0] = (yyvsp[0].character);
-      buf[1] = '\0';
-      (yyval.node) = makeNode(id, buf);
+      /* Stocker le char literal avec ses quotes : value = "'a'"
+         et label = num (c'est un littéral, pas une variable).
+         Le sémentique reconnaîtra value[0] == '\'' => type char. */
+      char buf[4];
+      snprintf(buf, sizeof(buf), "'%c'", (yyvsp[0].character));
+      (yyval.node) = makeNode(num, buf);
     }
-#line 1802 "obj/le_parser.c"
+#line 1804 "obj/le_parser.c"
     break;
 
   case 56: /* F: IDENT  */
-#line 473 "src/le_parser.y"
+#line 475 "src/le_parser.y"
     {
       (yyval.node) = makeNode(id, (yyvsp[0].id));
     }
-#line 1810 "obj/le_parser.c"
+#line 1812 "obj/le_parser.c"
     break;
 
   case 57: /* F: IDENT '(' Arguments ')'  */
-#line 477 "src/le_parser.y"
+#line 479 "src/le_parser.y"
     {
       Node *tmp = makeNode(F, NULL);
       Node *callNode = makeNode(id, "call");
@@ -1819,43 +1821,43 @@ yyreduce:
       addChild(tmp, callNode);
       (yyval.node) = tmp;
     }
-#line 1823 "obj/le_parser.c"
+#line 1825 "obj/le_parser.c"
     break;
 
   case 58: /* Arguments: ListExp  */
-#line 489 "src/le_parser.y"
+#line 491 "src/le_parser.y"
     { (yyval.node) = (yyvsp[0].node); }
-#line 1829 "obj/le_parser.c"
+#line 1831 "obj/le_parser.c"
     break;
 
   case 59: /* Arguments: %empty  */
-#line 491 "src/le_parser.y"
+#line 493 "src/le_parser.y"
     { (yyval.node) = NULL; }
-#line 1835 "obj/le_parser.c"
+#line 1837 "obj/le_parser.c"
     break;
 
   case 60: /* ListExp: ListExp ',' Exp  */
-#line 496 "src/le_parser.y"
+#line 498 "src/le_parser.y"
     {
       Node *tmp = (yyvsp[-2].node) ? (yyvsp[-2].node) : makeNode(ListExp, NULL);
       addChild(tmp, (yyvsp[0].node));
       (yyval.node) = tmp;
     }
-#line 1845 "obj/le_parser.c"
+#line 1847 "obj/le_parser.c"
     break;
 
   case 61: /* ListExp: Exp  */
-#line 502 "src/le_parser.y"
+#line 504 "src/le_parser.y"
     {
       Node *tmp = makeNode(ListExp, NULL);
       addChild(tmp, (yyvsp[0].node));
       (yyval.node) = tmp;
     }
-#line 1855 "obj/le_parser.c"
+#line 1857 "obj/le_parser.c"
     break;
 
 
-#line 1859 "obj/le_parser.c"
+#line 1861 "obj/le_parser.c"
 
       default: break;
     }
@@ -2048,7 +2050,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 510 "src/le_parser.y"
+#line 512 "src/le_parser.y"
 
 
 int yyparse();

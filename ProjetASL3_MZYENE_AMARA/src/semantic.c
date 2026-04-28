@@ -167,9 +167,13 @@ static const char *infer_expr_type(Node *n) {
         return "int";
     }
 
-    /* ── literal ── */
-    if (n->label == num)
+    /* ── littéraux ── */
+    if (n->label == num) {
+        /* char literal : stocké par le parser comme num avec value = "'a'" */
+        if (n->value && n->value[0] == '\'')
+            return "char";
         return "int";
+    }
 
     /* ===================================================== */
     /* 🔥 STRUCT CHAIN : b.a.x */
@@ -248,7 +252,7 @@ static const char *infer_expr_type(Node *n) {
         return "int";
     }
 
-    /* ── id ── */
+    /* ── id (variable ou opérateur) ── */
     if (n->value) {
         const char *t = lookup_type(n->value);
 
@@ -356,9 +360,23 @@ static void check_node(Node *n) {
                 SEM_ERR("return avec valeur dans une fonction void");
             } else {
                 const char *exprT = infer_expr_type(expr);
-                if (!is_same(retT, exprT))
-                    SEM_ERR("type de retour incorrect ('%s' attendu, '%s' trouvé)",
-                            retT, exprT);
+                if (!is_same(retT, exprT)) {
+                    /* Règles du sujet (return = affectation) :
+                     *   int  retourne char → OK, promotion implicite
+                     *   char retourne int  → warning
+                     *   autres mélanges    → erreur
+                     */
+                    int ret_num  = is_same(retT,  "int") || is_same(retT,  "char");
+                    int expr_num = is_same(exprT, "int") || is_same(exprT, "char");
+                    if (ret_num && expr_num) {
+                        if (is_same(retT, "char") && is_same(exprT, "int"))
+                            SEM_WAR("return int dans une fonction char (possible troncature)");
+                        /* int retourne char : silencieux */
+                    } else {
+                        SEM_ERR("type de retour incorrect ('%s' attendu, '%s' trouvé)",
+                                retT, exprT);
+                    }
+                }
             }
         }
     }
@@ -393,7 +411,21 @@ static void check_node(Node *n) {
 
     /* ── compatibilité des types ── */
     if (!is_same(lt, rt)) {
-        SEM_ERR("types incompatibles dans l'affectation (%s = %s)", lt, rt);
+        /* Règles du sujet :
+         *   int  = char → OK, promotion implicite silencieuse
+         *   char = int  → warning seulement (pas erreur)
+         *   autres mélanges → erreur
+         */
+        int lt_numeric = is_same(lt, "int") || is_same(lt, "char");
+        int rt_numeric = is_same(rt, "int") || is_same(rt, "char");
+
+        if (lt_numeric && rt_numeric) {
+            if (is_same(lt, "char") && is_same(rt, "int"))
+                SEM_WAR("affectation int -> char (possible troncature)");
+            /* int = char : silencieux */
+        } else {
+            SEM_ERR("types incompatibles dans l'affectation (%s = %s)", lt, rt);
+        }
     }
 }
 
@@ -485,9 +517,20 @@ static void check_node(Node *n) {
             const char *expected_t = s->data.function.params[i].type;
             const char *actual_t   = infer_expr_type(a);
 
-            if (!is_same(expected_t, actual_t))
-                SEM_ERR("type argument %d incorrect pour '%s' (%s attendu, %s trouvé)",
-                        i + 1, fname, expected_t, actual_t);
+            if (!is_same(expected_t, actual_t)) {
+                /* Règles du sujet : paramètre = affectation */
+                int exp_num = is_same(expected_t, "int") || is_same(expected_t, "char");
+                int act_num = is_same(actual_t,   "int") || is_same(actual_t,   "char");
+                if (exp_num && act_num) {
+                    if (is_same(expected_t, "char") && is_same(actual_t, "int"))
+                        SEM_WAR("argument %d de '%s' : int passé à un char (possible troncature)",
+                                i + 1, fname);
+                    /* char passé à int : silencieux */
+                } else {
+                    SEM_ERR("type argument %d incorrect pour '%s' (%s attendu, %s trouvé)",
+                            i + 1, fname, expected_t, actual_t);
+                }
+            }
 
             a = a->nextSibling;
         }
