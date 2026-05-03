@@ -23,6 +23,14 @@ SymbolTable *find_symbol(SymbolTable *t, const char *id)
     return NULL;
 }
 
+SymbolTable *find_symbol_kind(SymbolTable *t, const char *id, symbol_kind kind)
+{
+    for (; t; t = t->next)
+        if (!strcmp(t->id, id) && t->kind == kind)
+            return t;
+    return NULL;
+}
+
 /* ===================== SIZE ===================== */
 
 static int sizeof_tpc(const char *t)
@@ -34,18 +42,33 @@ static int sizeof_tpc(const char *t)
     if (!strcmp(t, "double")) return 8;
 
     /* struct */
-    SymbolTable *s = find_symbol(globalTable, t);
-    if (s && s->kind == STRUCT_TYPE)
+    SymbolTable *s = find_symbol_kind(globalTable, t, STRUCT_TYPE);
+    if (s)
         return s->data.structure.size;
 
     return 4;
+}
+
+static int is_valid_type(const char *t)
+{
+    if (!t) return 0;
+    if (!strcmp(t, "int")) return 1;
+    if (!strcmp(t, "char")) return 1;
+    if (!strcmp(t, "double")) return 1;
+    return find_symbol_kind(globalTable, t, STRUCT_TYPE) != NULL;
 }
 
 /* ===================== VARIABLES ===================== */
 
 void add_global(const char *name, const char *type)
 {
-    if (find_symbol(globalTable, name)) {
+    if (!is_valid_type(type)) {
+        fprintf(stderr, "Erreur: type inconnu '%s' pour %s\n", type, name);
+        exit(2);
+    }
+
+    if (find_symbol_kind(globalTable, name, VARIABLE) ||
+        find_symbol_kind(globalTable, name, FUNCTION)) {
         fprintf(stderr, "Erreur: redéfinition de %s\n", name);
         exit(2);
     }
@@ -64,7 +87,7 @@ static void add_struct(Node *n)
 
     const char *name = nameNode->value;
 
-    if (find_symbol(globalTable, name)) {
+    if (find_symbol_kind(globalTable, name, STRUCT_TYPE)) {
         fprintf(stderr, "Struct %s déjà définie\n", name);
         exit(2);
     }
@@ -116,7 +139,8 @@ static void add_function(Node *n)
     const char *fname = nameNode->value;
     const char *rtype = retNode->value;
 
-    if (find_symbol(globalTable, fname)) {
+    if (find_symbol_kind(globalTable, fname, FUNCTION) ||
+        find_symbol_kind(globalTable, fname, VARIABLE)) {
         fprintf(stderr, "Fonction %s déjà définie\n", fname);
         exit(2);
     }

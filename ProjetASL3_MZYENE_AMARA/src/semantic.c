@@ -79,8 +79,22 @@ static void free_local_variables(void) {
     }
 }
 
+static int is_valid_type(const char *type)
+{
+    if (!type) return 0;
+    if (!strcmp(type, "int")) return 1;
+    if (!strcmp(type, "char")) return 1;
+    if (!strcmp(type, "double")) return 1;
+    return find_symbol_kind(globalTable, type, STRUCT_TYPE) != NULL;
+}
+
 static int add_local_variable(const char *name, const char *type) {
     if (!name || !type) return 0;
+
+    if (!is_valid_type(type)) {
+        SEM_ERR("type inconnu '%s'", type);
+        return 0;
+    }
 
     for (SymbolTable *s = current_locals; s; s = s->next) {
         if (s->kind == VARIABLE && !strcmp(s->id, name)) {
@@ -155,6 +169,8 @@ static void collect_local_variables(Node *n) {
  * (Exp, TB, FB, M, E, T, F).  We unwrap by recursing into single-
  * child intermediate nodes transparently.
  */
+static const char *validate_function_call(Node *callNode);
+
 static const char *infer_expr_type(Node *n) {
     if (!n) return "int";
 
@@ -195,9 +211,9 @@ static const char *infer_expr_type(Node *n) {
             return "int";
         }
 
-        SymbolTable *s = find_symbol(globalTable, base_type);
+        SymbolTable *s = find_symbol_kind(globalTable, base_type, STRUCT_TYPE);
 
-        if (!s || s->kind != STRUCT_TYPE) {
+        if (!s) {
             SEM_ERR("'%s' n'est pas un struct", base_type);
             return "int";
         }
@@ -218,17 +234,7 @@ static const char *infer_expr_type(Node *n) {
 
     /* ── fonction call ── */
     if (n->value && strcmp(n->value, "call") == 0) {
-        Node *fnNode = n->firstChild;
-        if (!fnNode || !fnNode->value) return "int";
-
-        SymbolTable *s = find_symbol(globalTable, fnNode->value);
-
-        if (!s || s->kind != FUNCTION) {
-            SEM_ERR("fonction inconnue '%s'", fnNode->value);
-            return "int";
-        }
-
-        return s->data.function.return_type;
+        return validate_function_call(n);
     }
 
     /* ── unary ── */
@@ -267,6 +273,74 @@ static const char *infer_expr_type(Node *n) {
     return "int";
 }
 
+static Node *get_call_arguments(Node *callNode)
+{
+    if (!callNode || !callNode->firstChild)
+        return NULL;
+
+    Node *argsNode = callNode->firstChild->nextSibling;
+    if (!argsNode)
+        return NULL;
+
+    if (argsNode->label == Arguments)
+        argsNode = argsNode->firstChild;
+
+    if (!argsNode)
+        return NULL;
+
+    if (argsNode->label == ListExp)
+        return argsNode->firstChild;
+
+    return argsNode;
+}
+
+static const char *validate_function_call(Node *callNode)
+{
+    if (!callNode || !callNode->firstChild || !callNode->firstChild->value)
+        return "int";
+
+    const char *fname = callNode->firstChild->value;
+    SymbolTable *s = find_symbol_kind(globalTable, fname, FUNCTION);
+
+    if (!s) {
+        SEM_ERR("fonction inconnue '%s'", fname);
+        return "int";
+    }
+
+    Node *a = get_call_arguments(callNode);
+    int expected = s->data.function.param_count;
+    int actual = 0;
+
+    for (Node *tmp = a; tmp; tmp = tmp->nextSibling)
+        actual++;
+
+    if (actual != expected) {
+        SEM_ERR("nb args incorrect pour '%s' (%d attendu, %d trouvé)",
+                fname, expected, actual);
+    }
+
+    for (int i = 0; i < expected && a; i++, a = a->nextSibling) {
+        const char *expected_t = s->data.function.params[i].type;
+        const char *actual_t   = infer_expr_type(a);
+
+        if (!is_same(expected_t, actual_t)) {
+            int exp_num = is_same(expected_t, "int") || is_same(expected_t, "char");
+            int act_num = is_same(actual_t,   "int") || is_same(actual_t,   "char");
+
+            if (exp_num && act_num) {
+                if (is_same(expected_t, "char") && is_same(actual_t, "int"))
+                    SEM_WAR("argument %d de '%s' : int passé à un char (possible troncature)",
+                            i + 1, fname);
+            } else {
+                SEM_ERR("type argument %d incorrect pour '%s' (%s attendu, %s trouvé)",
+                        i + 1, fname, expected_t, actual_t);
+            }
+        }
+    }
+
+    return s->data.function.return_type;
+}
+
 /* ================= FUNCTION BODY ================= */
 
 static void handle_function(Node *n) {
@@ -280,7 +354,7 @@ static void handle_function(Node *n) {
 
     const char *fname = nameN->value;
 
-    current_fn = find_symbol(globalTable, fname);
+    current_fn = find_symbol_kind(globalTable, fname, FUNCTION);
     has_return  = 0;
 
     if (!current_fn) {
@@ -479,61 +553,7 @@ static void check_node(Node *n) {
 
     /* ─── appel de fonction (instruction) ─── */
     else if (strcmp(c->value, "call") == 0) {
-        Node *fnNode  = c->firstChild;
-        if (!fnNode || !fnNode->value) return;
-
-        const char *fname = fnNode->value;
-        SymbolTable *s    = find_symbol(globalTable, fname);
-
-        if (!s || s->kind != FUNCTION) {
-            SEM_ERR("fonction inconnue '%s'", fname);
-            return;
-        }
-
-        /* arguments : Arguments → ListExp → Exp* */
-        Node *argsNode = fnNode->nextSibling;
-        Node *listExp  = argsNode;
-        if (listExp && listExp->label == Arguments)
-            listExp = listExp->firstChild;
-        Node *a = NULL;
-        if (listExp) {
-            if (listExp->label == ListExp)
-                a = listExp->firstChild;
-            else
-                a = listExp;
-        }
-
-        int expected = s->data.function.param_count;
-        int actual   = 0;
-        for (Node *tmp = a; tmp; tmp = tmp->nextSibling) actual++;
-
-        if (actual != expected) {
-            SEM_ERR("nb args incorrect pour '%s' (%d attendu, %d trouvé)",
-                    fname, expected, actual);
-            return;
-        }
-
-        for (int i = 0; i < expected; i++) {
-            const char *expected_t = s->data.function.params[i].type;
-            const char *actual_t   = infer_expr_type(a);
-
-            if (!is_same(expected_t, actual_t)) {
-                /* Règles du sujet : paramètre = affectation */
-                int exp_num = is_same(expected_t, "int") || is_same(expected_t, "char");
-                int act_num = is_same(actual_t,   "int") || is_same(actual_t,   "char");
-                if (exp_num && act_num) {
-                    if (is_same(expected_t, "char") && is_same(actual_t, "int"))
-                        SEM_WAR("argument %d de '%s' : int passé à un char (possible troncature)",
-                                i + 1, fname);
-                    /* char passé à int : silencieux */
-                } else {
-                    SEM_ERR("type argument %d incorrect pour '%s' (%s attendu, %s trouvé)",
-                            i + 1, fname, expected_t, actual_t);
-                }
-            }
-
-            a = a->nextSibling;
-        }
+        validate_function_call(c);
     }
 
     /* ─── bloc { } ─── */
@@ -559,9 +579,9 @@ int check_semantics(Node *root) {
     check_node(root);
 
     /* Vérification de la fonction main */
-    SymbolTable *main_sym = find_symbol(globalTable, "main");
+    SymbolTable *main_sym = find_symbol_kind(globalTable, "main", FUNCTION);
 
-    if (!main_sym || main_sym->kind != FUNCTION)
+    if (!main_sym)
         SEM_ERR("fonction 'main' manquante");
     else if (!is_same(main_sym->data.function.return_type, "int"))
         SEM_ERR("'main' doit retourner 'int'");

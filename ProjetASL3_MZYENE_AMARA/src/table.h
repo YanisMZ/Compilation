@@ -59,6 +59,7 @@ extern SymbolTable *globalTable;
 
 /* API */
 SymbolTable *find_symbol(SymbolTable *, const char *);
+SymbolTable *find_symbol_kind(SymbolTable *, const char *, symbol_kind);
 void traverse_ast_and_create_table(Node *);
 void print_symbols_table(SymbolTable *);
 void free_symbols_table(SymbolTable *);
